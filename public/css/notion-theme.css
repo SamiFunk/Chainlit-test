@@ -1,0 +1,392 @@
+/* theo Research Assistant - Notion-inspired Theme */
+
+:root {
+    /* Notion-inspired color palette */
+    --notion-bg: #ffffff;
+    --notion-bg-secondary: #f7f6f3;
+    --notion-bg-tertiary: #fbfbfa;
+    --notion-text: #37352f;
+    --notion-text-secondary: #6b6b6b;
+    --notion-text-muted: #9b9a97;
+    --notion-accent: #2383e2;
+    --notion-accent-hover: #0b6bcb;
+    --notion-border: #e9e9e7;
+    --notion-divider: #e0e0e0;
+    --notion-code-bg: #f7f6f3;
+    --notion-success: #0f7b6c;
+    --notion-warning: #d9730d;
+    --notion-error: #e03e3e;
+    --notion-info: #337ea9;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(55, 53, 47, 0.04);
+    --shadow-md: 0 2px 8px rgba(55, 53, 47, 0.08);
+    --shadow-lg: 0 4px 16px rgba(55, 53, 47, 0.12);
+
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+
+    /* Border radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    /* Typography */
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-mono: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", monospace;
+}
+
+/* Dark mode support */
+[data-theme="dark"] {
+    --notion-bg: #191919;
+    --notion-bg-secondary: #202020;
+    --notion-bg-tertiary: #2f2f2f;
+    --notion-text: #e6e6e4;
+    --notion-text-secondary: #9b9a97;
+    --notion-text-muted: #6b6b6b;
+    --notion-border: #373737;
+    --notion-divider: #3a3a3a;
+    --notion-code-bg: #2f2f2f;
+}
+
+/* Base styles */
+body {
+    font-family: var(--font-sans);
+    background-color: var(--notion-bg);
+    color: var(--notion-text);
+    line-height: 1.6;
+}
+
+/* Chat container */
+.cl-chat-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+}
+
+/* Messages */
+.cl-message {
+    background: var(--notion-bg);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    border: 1px solid var(--notion-border);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease;
+}
+
+.cl-message:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* User messages */
+.cl-message-user {
+    background: var(--notion-bg-secondary);
+    border-left: 3px solid var(--notion-accent);
+}
+
+/* Assistant messages */
+.cl-message-assistant {
+    background: var(--notion-bg);
+}
+
+/* Message content typography */
+.cl-message h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    color: var(--notion-text);
+    line-height: 1.2;
+}
+
+.cl-message h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-sm);
+    color: var(--notion-text);
+    line-height: 1.3;
+}
+
+.cl-message h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    color: var(--notion-text);
+}
+
+.cl-message p {
+    margin-bottom: var(--spacing-md);
+    color: var(--notion-text);
+}
+
+/* Code blocks */
+.cl-message pre {
+    background: var(--notion-code-bg);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-md);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    border: 1px solid var(--notion-border);
+}
+
+.cl-message code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    background: var(--notion-code-bg);
+    padding: 0.2em 0.4em;
+    border-radius: var(--radius-sm);
+    color: var(--notion-error);
+}
+
+.cl-message pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+}
+
+/* Blockquotes - Notion style callout */
+.cl-message blockquote {
+    background: var(--notion-bg-secondary);
+    border-left: 3px solid var(--notion-accent);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-md);
+    margin: var(--spacing-md) 0;
+    color: var(--notion-text);
+}
+
+/* Lists */
+.cl-message ul,
+.cl-message ol {
+    padding-left: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+.cl-message li {
+    margin-bottom: var(--spacing-xs);
+}
+
+/* Links */
+.cl-message a {
+    color: var(--notion-accent);
+    text-decoration: underline;
+    text-decoration-color: rgba(35, 131, 226, 0.4);
+    transition: text-decoration-color 0.2s;
+}
+
+.cl-message a:hover {
+    text-decoration-color: var(--notion-accent);
+}
+
+/* Dividers */
+.cl-message hr {
+    border: none;
+    border-top: 1px solid var(--notion-divider);
+    margin: var(--spacing-lg) 0;
+}
+
+/* Action buttons - Notion style */
+.cl-action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--notion-bg);
+    border: 1px solid var(--notion-border);
+    border-radius: var(--radius-sm);
+    color: var(--notion-text);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.cl-action-button:hover {
+    background: var(--notion-bg-secondary);
+    border-color: var(--notion-text-muted);
+    box-shadow: var(--shadow-md);
+}
+
+.cl-action-button:active {
+    transform: translateY(1px);
+}
+
+/* Primary action button */
+.cl-action-button-primary,
+.cl-action-button[data-name="approve"] {
+    background: var(--notion-accent);
+    border-color: var(--notion-accent);
+    color: white;
+}
+
+.cl-action-button-primary:hover,
+.cl-action-button[data-name="approve"]:hover {
+    background: var(--notion-accent-hover);
+    border-color: var(--notion-accent-hover);
+}
+
+/* Danger action button */
+.cl-action-button[data-name="cancel"] {
+    color: var(--notion-error);
+    border-color: var(--notion-error);
+}
+
+.cl-action-button[data-name="cancel"]:hover {
+    background: var(--notion-error);
+    color: white;
+}
+
+/* Input area */
+.cl-textarea {
+    background: var(--notion-bg);
+    border: 1px solid var(--notion-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--notion-text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.cl-textarea:focus {
+    outline: none;
+    border-color: var(--notion-accent);
+    box-shadow: 0 0 0 3px rgba(35, 131, 226, 0.15);
+}
+
+/* Steps/Progress indicators */
+.cl-step {
+    background: var(--notion-bg-secondary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin: var(--spacing-sm) 0;
+    border-left: 3px solid var(--notion-accent);
+}
+
+.cl-step-running {
+    border-left-color: var(--notion-warning);
+    animation: pulse 2s infinite;
+}
+
+.cl-step-done {
+    border-left-color: var(--notion-success);
+}
+
+.cl-step-failed {
+    border-left-color: var(--notion-error);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Details/Summary - Collapsible sections */
+.cl-message details {
+    background: var(--notion-bg-secondary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin: var(--spacing-md) 0;
+    border: 1px solid var(--notion-border);
+}
+
+.cl-message summary {
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--notion-text-secondary);
+    user-select: none;
+}
+
+.cl-message summary:hover {
+    color: var(--notion-text);
+}
+
+.cl-message details[open] summary {
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--notion-border);
+}
+
+/* File upload area */
+.cl-file-upload {
+    border: 2px dashed var(--notion-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xl);
+    text-align: center;
+    background: var(--notion-bg-tertiary);
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.cl-file-upload:hover {
+    border-color: var(--notion-accent);
+    background: var(--notion-bg-secondary);
+}
+
+/* Header */
+.cl-header {
+    background: var(--notion-bg);
+    border-bottom: 1px solid var(--notion-border);
+    padding: var(--spacing-md) var(--spacing-lg);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--notion-border);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--notion-text-muted);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .cl-chat-container {
+        padding: var(--spacing-md);
+    }
+
+    .cl-message {
+        padding: var(--spacing-sm);
+    }
+
+    .cl-message h1 {
+        font-size: 1.5rem;
+    }
+
+    .cl-message h2 {
+        font-size: 1.25rem;
+    }
+}
+
+/* Animation for new messages */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cl-message {
+    animation: slideIn 0.3s ease-out;
+}
