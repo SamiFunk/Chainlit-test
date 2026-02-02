@@ -18,9 +18,10 @@ import urllib3
 warnings.filterwarnings('ignore', category=urllib3.exceptions.InsecureRequestWarning)
 
 import chainlit as cl
+from chainlit.input_widget import Select, Switch
 from dotenv import load_dotenv
 
-from agents import MaskingAgent, ResearchAgent, ReasoningAgent
+from agents import MaskingAgent, ResearchAgent, ReasoningAgent, InternalAgent
 
 # Load environment variables
 load_dotenv()
@@ -29,6 +30,11 @@ load_dotenv()
 masking_agent = MaskingAgent()
 research_agent = ResearchAgent()
 reasoning_agent = ReasoningAgent()
+internal_agent = InternalAgent()
+
+# Mode constants
+MODE_INTERNAL = "internal"
+MODE_EXTERNAL = "external"
 
 
 @cl.on_chat_start
@@ -39,20 +45,38 @@ async def start():
     cl.user_session.set("pending_query", None)
     cl.user_session.set("mask_mapping", {})
     cl.user_session.set("original_query", None)
+    cl.user_session.set("mode", MODE_INTERNAL)  # Default to internal mode
+
+    # ChatSettings with mode toggle
+    settings = await cl.ChatSettings([
+        Switch(
+            id="external_mode",
+            label="Externer Modus",
+            initial=False,
+            description="Aktiviere Perplexity-Recherche mit PII-Maskierung"
+        ),
+        Select(
+            id="research_model",
+            label="Recherche-Modell",
+            values=["perplexity/sonar-pro", "perplexity/sonar-reasoning-pro"],
+            initial_index=0,
+        ),
+    ]).send()
+
+    cl.user_session.set("settings", settings)
 
     # Welcome message
     await cl.Message(
-        content="""# 👋 Willkommen bei theo Research Assistant
+        content="""# 👋 Willkommen bei theo
 
-Ich helfe dir bei **externen Recherchen** mit Datenschutz im Fokus.
+**Aktueller Modus:** Intern (keine externe Recherche)
 
-## So funktioniert's:
+| Modus | Beschreibung |
+|-------|-------------|
+| **Intern** | Direkte Antworten, keine Daten nach extern |
+| **Extern** | Web-Recherche mit automatischer PII-Maskierung |
 
-1. **📝 Stelle deine Frage** - Schreib einfach los oder lade Dateien hoch
-2. **🔒 Datenschutz-Check** - Ich erkenne und maskiere sensible Daten (Namen, Firmen, etc.)
-3. **✅ Deine Freigabe** - Du prüfst und genehmigst die bereinigte Anfrage
-4. **🔍 Externe Recherche** - Die sichere Anfrage geht an Perplexity
-5. **📊 Finale Antwort** - Du erhältst eine aufbereitete Antwort
+**Modus wechseln:** Klicke auf das Zahnrad-Symbol oben rechts.
 
 ---
 
@@ -60,10 +84,34 @@ Ich helfe dir bei **externen Recherchen** mit Datenschutz im Fokus.
     ).send()
 
 
+@cl.on_settings_update
+async def on_settings_update(settings):
+    """Handle settings changes"""
+    cl.user_session.set("settings", settings)
+    is_external = settings.get("external_mode", False)
+    new_mode = MODE_EXTERNAL if is_external else MODE_INTERNAL
+    old_mode = cl.user_session.get("mode", MODE_INTERNAL)
+    cl.user_session.set("mode", new_mode)
+
+    # Update research model
+    research_agent.model = settings.get("research_model", "perplexity/sonar-pro")
+
+    if new_mode != old_mode:
+        if new_mode == MODE_EXTERNAL:
+            await cl.Message(
+                content="## 🔄 **Externer Modus** aktiviert\n\n🔒 PII-Maskierung → ✅ Freigabe → 🌐 Perplexity"
+            ).send()
+        else:
+            await cl.Message(
+                content="## 🔄 **Interner Modus** aktiviert\n\n🔐 Direkte Antworten, keine externe Recherche"
+            ).send()
+
+
 @cl.on_message
 async def handle_message(message: cl.Message):
     """Main message handler"""
     workflow_state = cl.user_session.get("workflow_state", "idle")
+    mode = cl.user_session.get("mode", MODE_INTERNAL)
 
     # Handle file attachments
     files_content = ""
@@ -74,13 +122,54 @@ async def handle_message(message: cl.Message):
     if files_content:
         user_input = f"{message.content}\n\n--- Dateiinhalt ---\n{files_content}"
 
-    # Route based on workflow state
-    if workflow_state == "idle":
-        await start_masking_workflow(user_input)
+    # Route based on mode
+    if mode == MODE_INTERNAL:
+        await handle_internal_query(user_input)
     else:
-        # Reset and start new query
-        cl.user_session.set("workflow_state", "idle")
+        # External mode - existing masking workflow
+        if workflow_state != "idle":
+            cl.user_session.set("workflow_state", "idle")
         await start_masking_workflow(user_input)
+
+
+async def handle_internal_query(user_query: str):
+    """Internal mode - direct response without masking"""
+    cl.user_session.set("original_query", user_query)
+
+    async with cl.Step(name="🧠 Verarbeitung", type="llm") as step:
+        step.input = "Generiere Antwort..."
+        try:
+            result = await internal_agent.respond(user_query)
+            step.output = f"Fertig ({len(result.response)} Zeichen)"
+        except Exception as e:
+            step.output = f"Fehler: {str(e)}"
+            await cl.Message(content=f"❌ **Fehler:** {str(e)}").send()
+            return
+
+    await cl.Message(content=result.response).send()
+
+    # Quick switch action
+    await cl.Message(
+        content="**Weitere Aktionen:**",
+        actions=[
+            cl.Action(name="switch_to_external", label="🌐 Externe Recherche starten"),
+            cl.Action(name="new_query", label="🔄 Neue Anfrage")
+        ]
+    ).send()
+
+
+@cl.action_callback("switch_to_external")
+async def on_switch_to_external(action: cl.Action):
+    """Switch to external mode and start masking workflow"""
+    await action.remove()
+    original_query = cl.user_session.get("original_query", "")
+    if not original_query:
+        await cl.Message(content="❌ Keine Anfrage gefunden.").send()
+        return
+
+    cl.user_session.set("mode", MODE_EXTERNAL)
+    await cl.Message(content="## 🔄 Wechsle zu externer Recherche...").send()
+    await start_masking_workflow(original_query)
 
 
 async def process_files(elements) -> str:
@@ -272,19 +361,7 @@ async def on_approve(action: cl.Action):
     await cl.Message(
         content=f"""## ✨ Finale Antwort
 
-{final_result.final_response}
-
----
-
-<details>
-<summary>ℹ️ Workflow-Info</summary>
-
-- **Masking Model:** Claude (Anthropic)
-- **Research Model:** Perplexity
-- **Processing Model:** Claude (Anthropic)
-- **Quellen:** {len(research_result.sources)} gefunden
-
-</details>"""
+{final_result.final_response}"""
     ).send()
 
     # Reset state

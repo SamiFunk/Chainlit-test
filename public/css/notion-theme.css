@@ -390,3 +390,15 @@ body {
 .cl-message {
     animation: slideIn 0.3s ease-out;
 }
+
+/* Mode Toggle Styling */
+.cl-action-button[data-name="switch_to_external"] {
+    background: linear-gradient(135deg, var(--notion-warning) 0%, #e67e22 100%);
+    border-color: var(--notion-warning);
+    color: white;
+}
+
+.cl-action-button[data-name="switch_to_external"]:hover {
+    background: linear-gradient(135deg, #c66a0a 0%, #d35400 100%);
+    border-color: #c66a0a;
+}
